@@ -4,6 +4,8 @@ export default class Board extends React.Component {
         constructor(props) {
             super(props);
             const squares = [];
+            var highlightedPieces = []; //keep track of the highlighted pieces
+            var highlighted = false;
 
             // initialize the board with pieces
             for (let row = 0; row < 8; row++) {
@@ -22,6 +24,7 @@ export default class Board extends React.Component {
                 squares,
                 whiteIsCurrent: true,
                 pieceIsMoving: false,
+                highlightedPieces,
                 lastSelectedRow: null,
                 lastSelectedCol: null,
             };
@@ -31,7 +34,7 @@ export default class Board extends React.Component {
         renderSquare(row, col) {
             return ( <
                 Square className = {
-                    (row + col) % 2 === 0 ? 'black square' : 'white square'
+                    (this.isHighlighted(row,col)) ? 'gray square' : (row + col) % 2 === 0 ? 'black square' : 'white square'
                 }
                 value = { this.state.squares[row][col] }
                 onClick = {
@@ -55,8 +58,60 @@ export default class Board extends React.Component {
             this.state.squares[row][col] = null
         }
 
+        isHighlighted(row,col){
+            for (var i = 0; i < this.state.highlightedPieces.length; i++){
+                if (this.state.highlightedPieces[i][0] == row && this.state.highlightedPieces[i][1] == col){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        highlight(row,col){
+            var availSquare = [];
+            const highlight = [];
+            console.log(highlight);
+            if (this.state.squares[row][col] === "b") {
+                if (this.state.squares[row+1][col+1] === null){
+                    availSquare.push(row+1);
+                    availSquare.push(col+1)
+                    highlight.push(availSquare);
+                    availSquare =[];
+                    console.log("First possible move: ", row+1, col + 1)
+                }
+                if (this.state.squares[row+1][col-1] === null){
+                    availSquare.push(row+1);
+                    availSquare.push(col-1)
+                    highlight.push(availSquare);
+                    availSquare =[];
+                    console.log("Second possible move: ", row+1, col - 1)
+                }
+            }
+            else if (this.state.squares[row][col] === "w"){
+                if (this.state.squares[row-1][col+1] === null){
+                    availSquare.push(row-1);
+                    availSquare.push(col+1)
+                    highlight.push(availSquare);
+                    availSquare =[];
+                    console.log("First possible move: ", row-1, col + 1)
+                }
+                if (this.state.squares[row-1][col-1] === null){
+                    availSquare.push(row-1);
+                    availSquare.push(col-1)
+                    highlight.push(availSquare);
+                    availSquare =[];
+                    console.log("Second possible move: ", row-1, col - 1)
+                }
+            }
+            this.setState({
+                highlightedPieces : highlight
+            });
+            console.log(this.highlightedPieces);
+            
+        }
+
         handleClick(row, col) {
-            //copy the state of the squares
+            this.highlight(row,col);
             const squares = this.state.squares.slice();
             //if a piece is moving and the square clicked is empty:
             if (this.state.pieceIsMoving && !this.state.squares[row][col]) {
@@ -124,7 +179,7 @@ export default class Board extends React.Component {
                 for (let col = 0; col < 8; col++) {
                     cols.push(this.renderSquare(row, col));
                 }
-                board.push( < div className = "board-row" > { cols } < /div>);
+                board.push( < div className = "board-row" > { cols } </div>);
                 }
 
                 return ( < div >

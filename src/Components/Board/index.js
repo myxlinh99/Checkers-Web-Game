@@ -51,6 +51,10 @@ export default class Board extends React.Component {
             this.setState({ whiteIsCurrent: !this.state.whiteIsCurrent });
         }
 
+        capture(row, col) {
+            this.state.squares[row][col] = null
+        }
+
         handleClick(row, col) {
             //copy the state of the squares
             const squares = this.state.squares.slice();
@@ -62,45 +66,57 @@ export default class Board extends React.Component {
                         if ((col === (this.state.lastSelectedCol + 1)) || (col === (this.state.lastSelectedCol - 1))) {
                             this.move(row, col, squares);
                         }
+
                     } else if (row === (this.state.lastSelectedRow + 2)) {
-                        if (this.state.squares[this.state.lastSelectedRow + 1][this.state.lastSelectedCol - 1] === 'w' || this.state.squares[this.state.lastSelectedRow + 1][this.state.lastSelectedCol - 1] === 'w') {
-                            if ((col === (this.state.lastSelectedCol + 2)) ||
-                                (col === (this.state.lastSelectedCol - 2))) {
-                                this.move(row, col, squares);
+                        console.log(this.state)
+                        if (this.state.squares[this.state.lastSelectedRow + 1][this.state.lastSelectedCol + 1] === 'w') {
+                            if (col === this.state.lastSelectedCol + 2) {
+                                this.move(row, col, squares)
+                                this.capture(this.state.lastSelectedRow + 1, this.state.lastSelectedCol + 1)
+                            }
+                        } else if (this.state.squares[this.lastSelectedRow + 1][this.state.lastSelectedCol - 1] === 'w') {
+                            if (col === this.state.lastSelectedCol - 2) {
+                                this.move(row, col, squares)
+                                this.capture(this.lastSelectedRow + 1, this.state.lastSelectedCol - 1)
                             }
                         }
                     }
 
                 } else if (this.state.squares[this.state.lastSelectedRow][this.state.lastSelectedCol] === 'w' && this.state.whiteIsCurrent) {
-                    console.log("Hello");
                     if (row === (this.state.lastSelectedRow - 1)) {
-                        console.log("Hello");
                         if ((col === (this.state.lastSelectedCol + 1)) || (col === (this.state.lastSelectedCol - 1))) {
                             this.move(row, col, squares);
 
                         }
+
                     } else if (row === (this.state.lastSelectedRow - 2)) {
-                        if (this.state.squares[this.state.lastSelectedRow - 1][this.state.lastSelectedCol - 1] === 'b' ||
-                            this.state.squares[this.state.lastSelectedRow - 1][this.state.lastSelectedCol - 1] === 'w') {
-                            if ((col === (this.state.lastSelectedCol + 2)) ||
-                                (col === (this.state.lastSelectedCol - 2))) {
-                                this.move(row, col, squares);
+                        if (this.state.squares[this.state.lastSelectedRow - 1][this.state.lastSelectedCol + 1] === 'b') {
+                            if (col === this.state.lastSelectedCol + 2) {
+                                this.move(row, col, squares)
+                                this.capture(this.state.lastSelectedRow - 1, this.state.lastSelectedCol + 1)
+                            }
+                        } else if (this.state.squares[this.lastSelectedRow - 1][this.state.lastSelectedCol - 1] === 'b') {
+                            if (col === this.state.lastSelectedCol - 2) {
+                                this.move(row, col, squares)
+                                this.capture(this.lastSelectedRow - 1, this.state.lastSelectedCol - 1)
                             }
                         }
                     }
                 }
-
-                this.setState({
-                    squares,
-                    lastSelectedRow: row,
-                    lastSelectedCol: col,
-                    pieceIsMoving: !this.state.pieceIsMoving,
-                });
-
             }
+
+            this.setState({
+                squares,
+                lastSelectedRow: row,
+                lastSelectedCol: col,
+                pieceIsMoving: !this.state.pieceIsMoving,
+            });
+
+
         }
 
         render() {
+            console.log(this.state.squares)
             let status = this.state.pieceIsMoving ? 'A piece is moving' : this.state.whiteIsCurrent ? 'Next Turn: Player 1' : 'Next Turn: Player 2';
             const board = [];
             for (let row = 0; row < 8; row++) {

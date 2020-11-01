@@ -22,11 +22,11 @@ export default class Board extends React.Component {
             }
             this.state = {
                 squares,
-                xIsNext: true,
+                whiteIsCurrent: true,
                 pieceIsMoving: false,
-                lastSelectedX: null,
-                lastSelectedY: null,
-                highlightedPieces
+                highlightedPieces,
+                lastSelectedRow: null,
+                lastSelectedCol: null,
             };
 
         }
@@ -47,10 +47,15 @@ export default class Board extends React.Component {
         }
 
         move(row, col, squares) {
-            const tmp = this.state.squares[this.state.lastSelectedX][this.state.lastSelectedY];
-            squares[this.state.lastSelectedX][this.state.lastSelectedY] = null;
+            //change the piece's location and update the board
+            const tmp = this.state.squares[this.state.lastSelectedRow][this.state.lastSelectedCol];
+            squares[this.state.lastSelectedRow][this.state.lastSelectedCol] = null;
             squares[row][col] = tmp;
-            this.setState({ xIsNext: !this.state.xIsNext });
+            this.setState({ whiteIsCurrent: !this.state.whiteIsCurrent });
+        }
+
+        capture(row, col) {
+            this.state.squares[row][col] = null
         }
 
         isHighlighted(row,col){
@@ -108,35 +113,66 @@ export default class Board extends React.Component {
         handleClick(row, col) {
             this.highlight(row,col);
             const squares = this.state.squares.slice();
+            //if a piece is moving and the square clicked is empty:
             if (this.state.pieceIsMoving && !this.state.squares[row][col]) {
-                if (this.state.squares[this.state.lastSelectedX][this.state.lastSelectedY] === 'b' && !this.state.xIsNext) {
-                    if (row === (this.state.lastSelectedX + 1)) {
-                        if ((col === (this.state.lastSelectedY + 1)) || (col === (this.state.lastSelectedY - 1))) {
+                //if the piece is brown and it isn't white's turn:
+                if (this.state.squares[this.state.lastSelectedRow][this.state.lastSelectedCol] === 'b' && !this.state.whiteIsCurrent) {
+                    if (row === (this.state.lastSelectedRow + 1)) {
+                        if ((col === (this.state.lastSelectedCol + 1)) || (col === (this.state.lastSelectedCol - 1))) {
                             this.move(row, col, squares);
                         }
+
+                    } else if (row === (this.state.lastSelectedRow + 2)) {
+                        console.log(this.state)
+                        if (this.state.squares[this.state.lastSelectedRow + 1][this.state.lastSelectedCol + 1] === 'w') {
+                            if (col === this.state.lastSelectedCol + 2) {
+                                this.move(row, col, squares)
+                                this.capture(this.state.lastSelectedRow + 1, this.state.lastSelectedCol + 1)
+                            }
+                        } else if (this.state.squares[this.lastSelectedRow + 1][this.state.lastSelectedCol - 1] === 'w') {
+                            if (col === this.state.lastSelectedCol - 2) {
+                                this.move(row, col, squares)
+                                this.capture(this.lastSelectedRow + 1, this.state.lastSelectedCol - 1)
+                            }
+                        }
                     }
-                } 
-                else if (this.state.squares[this.state.lastSelectedX][this.state.lastSelectedY] === 'w' && this.state.xIsNext) {
-                    if (row === (this.state.lastSelectedX - 1)) {
-                        if ((col === (this.state.lastSelectedY + 1)) || (col === (this.state.lastSelectedY - 1))) {
+
+                } else if (this.state.squares[this.state.lastSelectedRow][this.state.lastSelectedCol] === 'w' && this.state.whiteIsCurrent) {
+                    if (row === (this.state.lastSelectedRow - 1)) {
+                        if ((col === (this.state.lastSelectedCol + 1)) || (col === (this.state.lastSelectedCol - 1))) {
                             this.move(row, col, squares);
 
+                        }
+
+                    } else if (row === (this.state.lastSelectedRow - 2)) {
+                        if (this.state.squares[this.state.lastSelectedRow - 1][this.state.lastSelectedCol + 1] === 'b') {
+                            if (col === this.state.lastSelectedCol + 2) {
+                                this.move(row, col, squares)
+                                this.capture(this.state.lastSelectedRow - 1, this.state.lastSelectedCol + 1)
+                            }
+                        } else if (this.state.squares[this.lastSelectedRow - 1][this.state.lastSelectedCol - 1] === 'b') {
+                            if (col === this.state.lastSelectedCol - 2) {
+                                this.move(row, col, squares)
+                                this.capture(this.lastSelectedRow - 1, this.state.lastSelectedCol - 1)
+                            }
                         }
                     }
                 }
             }
+
             this.setState({
                 squares,
-                lastSelectedX: row,
-                lastSelectedY: col,
+                lastSelectedRow: row,
+                lastSelectedCol: col,
                 pieceIsMoving: !this.state.pieceIsMoving,
             });
+
 
         }
 
         render() {
-            //check if it's highlighted, then render
-            let status = this.state.pieceIsMoving ? 'A piece is moving' : this.state.xIsNext ? 'Next Turn: Player 1' : 'Next Turn: Player 2';
+            console.log(this.state.squares)
+            let status = this.state.pieceIsMoving ? 'A piece is moving' : this.state.whiteIsCurrent ? 'Next Turn: Player 1' : 'Next Turn: Player 2';
             const board = [];
             for (let row = 0; row < 8; row++) {
                 const cols = [];
@@ -146,8 +182,9 @@ export default class Board extends React.Component {
                 board.push( < div className = "board-row" > { cols } </div>);
                 }
 
-                return ( <div>
-                    <div className = "status" > { status } </div> { board } </div>
+                return ( < div >
+                    <
+                    div className = "status" > { status } < /div> { board } </div >
                 );
 
             }

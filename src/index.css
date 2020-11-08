@@ -24,6 +24,9 @@ body {
   .black {
     background: rgb(0, 0, 0);
   }
+  .gray {
+    background: #d3d3d3;
+  }
   .square {
     border: 1px solid #999;
     float: left;

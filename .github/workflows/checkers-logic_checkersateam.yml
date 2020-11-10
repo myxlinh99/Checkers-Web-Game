@@ -32,5 +32,5 @@ jobs:
       with:
         app-name: 'checkersateam'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        publish-profile: ${{ secrets. AZUREAPPSERVICE_PUBLISHPROFILE_AB7D805604044B15950DCE27FD533B80 }}
         package: ./build

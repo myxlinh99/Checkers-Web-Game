@@ -33,4 +33,4 @@ jobs:
         app-name: 'checkersateam'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_ab7d805604044b15950dce27fd533b80 }}
-        package: .
+        package: ./build

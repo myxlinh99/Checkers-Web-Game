@@ -24,13 +24,12 @@ jobs:
       run: |
         npm install
         npm run build --if-present
-      env:
-         CI: ""
+        npm run test --if-present
 
     - name: 'Deploy to Azure Web App'
       uses: azure/webapps-deploy@v2
       with:
         app-name: 'checkersateam'
         slot-name: 'production'
-        publish-profile: ${{ secrets. AZUREAPPSERVICE_PUBLISHPROFILE_AB7D805604044B15950DCE27FD533B80 }}
-        package: ./build
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_3de6b29fd82d44f2be5e977ec85ed4c9 }}
+        package: .

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import Board from './components/Board'
+import Board from './Components/Board/Board';
 
 class Game extends React.Component {
   render() {
@@ -11,8 +11,6 @@ class Game extends React.Component {
           <Board />
         </div>
         <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
         </div>
       </div>
     );
@@ -20,7 +18,6 @@ class Game extends React.Component {
 }
 
 // ========================================
-
 ReactDOM.render(
   <Game />,
   document.getElementById('root'),

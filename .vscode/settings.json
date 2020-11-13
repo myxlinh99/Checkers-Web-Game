@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/f6bfc817-322a-4cdf-afa6-e71f87c30f8e/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/CheckersATeam",
+    "appService.deploySubpath": "."
+}

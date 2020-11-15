@@ -139,9 +139,10 @@ export default class Board extends React.Component {
         };
 
         handleClick(row, col) {
-            var squares = this.state.squares.slice();
-            var possibleMoves = {...this.state.possibleMoves };
-            var highlightedPieces = this.state.highlightedPieces.slice();
+            let squares = this.state.squares.slice();
+            let possibleMoves = {...this.state.possibleMoves };
+            let highlightedPieces = this.state.highlightedPieces.slice();
+            let pieceIsMoving = this.state.pieceIsMoving;
 
             console.log(squares);
             console.log("Row: " + this.state.lastSelectedRow);
@@ -150,24 +151,27 @@ export default class Board extends React.Component {
 
             let shouldMovingStateChange = false;
             // if a piece is not moving, get possible moves when piece is clicked
-            if (!this.state.pieceIsMoving) {
+            if (!pieceIsMoving) {
                 let piece = squares[row][col];
                 if ((piece == 'w' && this.state.whiteIsCurrent) ||
                     (piece == 'b' && !this.state.whiteIsCurrent)) {
                     possibleMoves = this.getPossibleMoves(squares, row, col);
-                    console.log(possibleMoves);
-                    this.setState({
-                        possibleMoves: possibleMoves,
-                        highlightedPieces: possibleMoves['normalMoves'].concat(possibleMoves['jumpMoves'])
-                    });
-                };
-                shouldMovingStateChange = true;
+                    highlightedPieces = possibleMoves['normalMoves'].concat(possibleMoves['jumpMoves'])
+                    pieceIsMoving = true;
+                } 
+                else
+                {
+                    pieceIsMoving = false;
+                }
             }
-            // else, if the piece is moving, check if [row, col] are in possibleMoves
-            else if (this.state.pieceIsMoving) {
+            // else, if the piece is moving and landing on a location, 
+            // check if [row, col] are in possibleMoves and move/jump
+            // then resets highlightedPieces and possibleMoves
+            else if (pieceIsMoving) {
                 let jumpMoveIndex = 0;
                 if (this.indexOfLocInArray(row, col, possibleMoves['normalMoves']) >= 0) {
                     this.move(row, col, squares);
+                    pieceIsMoving = false;
                 } else if ((jumpMoveIndex = this.indexOfLocInArray(row, col, possibleMoves['jumpMoves'])) >= 0) {
                     this.move(row, col, squares);
                     let capturedRow = possibleMoves['captures'][jumpMoveIndex][0];
@@ -177,10 +181,10 @@ export default class Board extends React.Component {
                     this.capture(capturedRow, capturedCol, squares);
                 }
 
-                if (row != this.lastSelectedRow && col != this.lastSelectedCol) {
-                    shouldMovingStateChange = false;
-                }
-                shouldMovingStateChange = true;
+                pieceIsMoving = false;
+                // resets possible moves and highlighted pieces after a move is made
+                possibleMoves = {};
+                highlightedPieces = [];
 
             }
 
@@ -190,69 +194,15 @@ export default class Board extends React.Component {
                 possibleMoves: possibleMoves,
                 highlightedPieces: highlightedPieces,
                 lastSelectedRow: row,
-                lastSelectedCol: col
+                lastSelectedCol: col,
+                pieceIsMoving: pieceIsMoving
             });
 
             console.log("-------------End possible moves----------");
         }
 
-
-
-        // //if a piece is moving and the square clicked is empty:
-        // if (this.state.pieceIsMoving && !this.state.squares[row][col]) {
-        //     //if the piece is brown and it isn't white's turn:
-        //     if (squares[this.state.lastSelectedRow][this.state.lastSelectedCol] === 'b' && !this.state.whiteIsCurrent) {
-        //         if (row === (this.state.lastSelectedRow + 1)) {
-        //             if ((col === (this.state.lastSelectedCol + 1)) || (col === (this.state.lastSelectedCol - 1))) {
-        //                 squares = this.move(row, col, squares);
-        //                 console.log("Does it go here1?");
-        //             }
-
-        //         } else if (row === (this.state.lastSelectedRow + 2)) {
-        //             if (squares[this.state.lastSelectedRow + 1][this.state.lastSelectedCol + 1] === 'w') {
-        //                 if (col === this.state.lastSelectedCol + 2) {
-        //                     squares = this.move(row, col, squares)
-        //                     squares = this.capture(this.state.lastSelectedRow + 1, this.state.lastSelectedCol + 1, squares)
-        //                     console.log("Does it go here2?");
-        //                 }
-        //             } else if (squares[this.lastSelectedRow + 1][this.state.lastSelectedCol - 1] === 'w') {
-        //                 if (col === this.state.lastSelectedCol - 2) {
-        //                     squares = this.move(row, col, squares)
-        //                     squares = this.capture(this.lastSelectedRow + 1, this.state.lastSelectedCol - 1, squares)
-        //                     console.log("Does it go here3?");
-        //                 }
-        //             }
-        //         }
-
-        //     } else if (squares[this.state.lastSelectedRow][this.state.lastSelectedCol] === 'w' && this.state.whiteIsCurrent) {
-        //         if (row === (this.state.lastSelectedRow - 1)) {
-        //             if ((col === (this.state.lastSelectedCol + 1)) || (col === (this.state.lastSelectedCol - 1))) {
-        //                 squares = this.move(row, col, squares);
-        //                 console.log("Does it go here4?");
-        //             }
-
-        //         } else if (row === (this.state.lastSelectedRow - 2)) {
-        //             if (squares[this.state.lastSelectedRow - 1][this.state.lastSelectedCol + 1] === 'b') {
-        //                 if (col === this.state.lastSelectedCol + 2) {
-        //                     squares = this.move(row, col, squares)
-        //                     squares = this.capture(this.state.lastSelectedRow - 1, this.state.lastSelectedCol + 1, squares)
-        //                     console.log("Does it go here5?");
-        //                 }
-        //             } else if (squares[this.lastSelectedRow - 1][this.state.lastSelectedCol - 1] === 'b') {
-        //                 if (col === this.state.lastSelectedCol - 2) {
-        //                     squares = this.move(row, col, squares)
-        //                     squares = this.capture(this.lastSelectedRow - 1, this.state.lastSelectedCol - 1, squares)
-        //                     console.log("Does it go here6?");
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
-
-
         render() {
-            let status = this.state.pieceIsMoving ? 'A piece is moving' : this.state.whiteIsCurrent ? 'Next Turn: Player 1' : 'Next Turn: Player 2';
+            let status = this.state.pieceIsMoving ? 'A piece is moving' : this.state.whiteIsCurrent ? 'Next Turn: White Turn' : 'Next Turn: Black Turn';
             const board = [];
             for (let row = 0; row < 8; row++) {
                 const cols = [];

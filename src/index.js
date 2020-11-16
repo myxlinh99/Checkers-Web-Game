@@ -12,8 +12,8 @@ class Game extends React.Component {
   constructor() {
     super();
     this.state = {
-      // endpoint: "http://127.0.0.1:3000",
-      endpoint: "https://frozen-plateau-07686.herokuapp.com",
+      endpoint: "http://127.0.0.1:3000",
+      // endpoint: "https://frozen-plateau-07686.herokuapp.com",
       socket: null,
       isGameStarted: false,
       gameId:null,
@@ -52,25 +52,18 @@ class Game extends React.Component {
     return (
       <Container>
         {
-          !this.state.isGameStarted ? !this.state.isRegistered ? <header className="App-header">
+          !this.state.isGameStarted 
+          ? !this.state.isRegistered 
+          ? <header className="App-header">
             {this.state.socket
               ? <GetUserDetail socket={this.state.socket} registrationConfirmation={this.registrationConfirmation} />
               : <p>Loading...</p>}
-          </header> :
-            <ShowUsers socket={this.state.socket} gameStartConfirmation={this.gameStartConfirmation} /> :
-            <GamePlay socket={this.state.socket} gameId={this.state.gameId} gameData={this.state.gameData} opponentLeft={this.opponentLeft} />
+            </header> 
+          : <ShowUsers socket={this.state.socket} gameStartConfirmation={this.gameStartConfirmation} /> 
+          : <GamePlay socket={this.state.socket} gameId={this.state.gameId} gameData={this.state.gameData} opponentLeft={this.opponentLeft} />
         }
       </Container>
     );
-    // return (
-    //   <div className="game">
-    //     <div className="game-board">
-    //       <Board />
-    //     </div>
-    //     <div className="game-info">
-    //     </div>
-    //   </div>
-    // );
   }
 }
 

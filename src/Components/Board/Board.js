@@ -1,6 +1,14 @@
 import React from 'react';
 import Square from '../Square/Square'
 
+const opponent = {
+    'b': 'w',
+    'w': 'b'
+}
+const pieceTurn = {
+    'b': false,
+    'w': true
+}
 export default class Board extends React.Component {
         constructor(props) {
             super(props);
@@ -28,14 +36,15 @@ export default class Board extends React.Component {
                 highlightedPieces,
                 lastSelectedRow: null,
                 lastSelectedCol: null,
+                possibleMoves: null
             };
 
         }
 
         renderSquare(row, col) {
-            return ( <
-                Square className = {
-                    (this.isHighlighted(row,col)) ? 'gray square' : (row + col) % 2 === 0 ? 'black square' : 'white square'
+            return ( < Square className = {
+                    this.isHighlighted(row, col) ? 'gray square' :
+                        (row + col) % 2 === 0 ? 'black square' : 'white square'
                 }
                 value = { this.state.squares[row][col] }
                 onClick = {
@@ -53,134 +62,154 @@ export default class Board extends React.Component {
             squares[this.state.lastSelectedRow][this.state.lastSelectedCol] = null;
             squares[row][col] = tmp;
             this.setState({ whiteIsCurrent: !this.state.whiteIsCurrent });
+            return squares;
         }
 
-        capture(row, col) {
-            this.state.squares[row][col] = null
+        capture(row, col, squares) {
+            squares[row][col] = null;
+            return squares;
+
         }
 
-        isHighlighted(row,col){
-            for (var i = 0; i < this.state.highlightedPieces.length; i++){
-                if (this.state.highlightedPieces[i][0] == row && this.state.highlightedPieces[i][1] == col){
-                    return true;
-                }
-            }
-            return false;
+        isHighlighted(row, col) {
+            return this.indexOfLocInArray(row, col, this.state.highlightedPieces) >= 0;
         }
 
-        highlight(row,col){
-            var availSquare = [];
-            const highlight = [];
-            console.log(highlight);
-            if (this.state.squares[row][col] === "b") {
-                if (this.state.squares[row+1][col+1] === null){
-                    availSquare.push(row+1);
-                    availSquare.push(col+1)
-                    highlight.push(availSquare);
-                    availSquare =[];
-                    console.log("First possible move: ", row+1, col + 1)
+        // Return an array of possible moves for the current piece
+        // based on the current location, current turn, and the piece's color
+        getPossibleMoves(squares, row, col) {
+            console.log("Getting possible moves");
+            var possibleMoves = {
+                'normalMoves': [],
+                'jumpMoves': [],
+                // the piece that will be captured if the corresponding 
+                // jump move in the same index is chosen
+                'captures': []
+            };
+            const piece = squares[row][col];
+            let frontRow = -1;
+            let jumpRow = -1;
+
+            if (piece === 'w') {
+                // index of the row in front of a white piece is currentRow - 1
+                frontRow = row - 1;
+                jumpRow = row - 2;
+            } else if (piece == 'b') {
+                // index of the row in front of a black piece is currentRow + 1
+                frontRow = row + 1;
+                jumpRow = row + 2;
+            }
+            let rightCol = col + 1;
+            let leftCol = col - 1;
+            let doubleRightCol = col + 2;
+            let doubleLeftCol = col - 2;
+            // handle moves to positions in the front row that are empty
+            if (frontRow >= 0 && frontRow < 8) {
+                if ((rightCol < 8) && !squares[frontRow][rightCol])
+                    possibleMoves['normalMoves'].push([frontRow, rightCol]);
+                if ((leftCol >= 0) && !squares[frontRow][leftCol])
+                    possibleMoves['normalMoves'].push([frontRow, leftCol]);
+            }
+
+            // handle jump moves
+            if (jumpRow >= 0 && frontRow < 8) {
+                if ((doubleRightCol < 8) &&
+                    squares[frontRow][rightCol] == opponent[piece] &&
+                    !squares[jumpRow][doubleRightCol]) {
+                    possibleMoves['captures'].push([frontRow, rightCol]);
+                    possibleMoves['jumpMoves'].push([jumpRow, doubleRightCol])
                 }
-                if (this.state.squares[row+1][col-1] === null){
-                    availSquare.push(row+1);
-                    availSquare.push(col-1)
-                    highlight.push(availSquare);
-                    availSquare =[];
-                    console.log("Second possible move: ", row+1, col - 1)
+                if ((doubleLeftCol >= 0) &&
+                    squares[frontRow][leftCol] == opponent[piece] &&
+                    !squares[jumpRow][doubleLeftCol]) {
+                    possibleMoves['captures'].push([frontRow, leftCol]);
+                    possibleMoves['jumpMoves'].push([jumpRow, doubleLeftCol]);
                 }
             }
-            else if (this.state.squares[row][col] === "w"){
-                if (this.state.squares[row-1][col+1] === null){
-                    availSquare.push(row-1);
-                    availSquare.push(col+1)
-                    highlight.push(availSquare);
-                    availSquare =[];
-                    console.log("First possible move: ", row-1, col + 1)
-                }
-                if (this.state.squares[row-1][col-1] === null){
-                    availSquare.push(row-1);
-                    availSquare.push(col-1)
-                    highlight.push(availSquare);
-                    availSquare =[];
-                    console.log("Second possible move: ", row-1, col - 1)
-                }
-            }
-            this.setState({
-                highlightedPieces : highlight
-            });
-            console.log(this.highlightedPieces);
-            
+            return possibleMoves;
         }
+
+        indexOfLocInArray(row, col, array) {
+            for (var i = 0; i < array.length; i++) {
+                if (array[i][0] == row && array[i][1] == col) {
+                    return i;
+                }
+            }
+            return -1;
+        };
 
         handleClick(row, col) {
-            this.highlight(row,col);
-            const squares = this.state.squares.slice();
-            //if a piece is moving and the square clicked is empty:
-            if (this.state.pieceIsMoving && !this.state.squares[row][col]) {
-                //if the piece is brown and it isn't white's turn:
-                if (this.state.squares[this.state.lastSelectedRow][this.state.lastSelectedCol] === 'b' && !this.state.whiteIsCurrent) {
-                    if (row === (this.state.lastSelectedRow + 1)) {
-                        if ((col === (this.state.lastSelectedCol + 1)) || (col === (this.state.lastSelectedCol - 1))) {
-                            this.move(row, col, squares);
-                        }
+            let squares = this.state.squares.slice();
+            let possibleMoves = {...this.state.possibleMoves };
+            let highlightedPieces = this.state.highlightedPieces.slice();
+            let pieceIsMoving = this.state.pieceIsMoving;
 
-                    } else if (row === (this.state.lastSelectedRow + 2)) {
-                        console.log(this.state)
-                        if (this.state.squares[this.state.lastSelectedRow + 1][this.state.lastSelectedCol + 1] === 'w') {
-                            if (col === this.state.lastSelectedCol + 2) {
-                                this.move(row, col, squares)
-                                this.capture(this.state.lastSelectedRow + 1, this.state.lastSelectedCol + 1)
-                            }
-                        } else if (this.state.squares[this.lastSelectedRow + 1][this.state.lastSelectedCol - 1] === 'w') {
-                            if (col === this.state.lastSelectedCol - 2) {
-                                this.move(row, col, squares)
-                                this.capture(this.lastSelectedRow + 1, this.state.lastSelectedCol - 1)
-                            }
-                        }
-                    }
+            console.log(squares);
+            console.log("Row: " + this.state.lastSelectedRow);
+            console.log("Col: " + this.state.lastSelectedCol);
+            console.log("-------------Possible moves----------");
 
-                } else if (this.state.squares[this.state.lastSelectedRow][this.state.lastSelectedCol] === 'w' && this.state.whiteIsCurrent) {
-                    if (row === (this.state.lastSelectedRow - 1)) {
-                        if ((col === (this.state.lastSelectedCol + 1)) || (col === (this.state.lastSelectedCol - 1))) {
-                            this.move(row, col, squares);
-
-                        }
-
-                    } else if (row === (this.state.lastSelectedRow - 2)) {
-                        if (this.state.squares[this.state.lastSelectedRow - 1][this.state.lastSelectedCol + 1] === 'b') {
-                            if (col === this.state.lastSelectedCol + 2) {
-                                this.move(row, col, squares)
-                                this.capture(this.state.lastSelectedRow - 1, this.state.lastSelectedCol + 1)
-                            }
-                        } else if (this.state.squares[this.lastSelectedRow - 1][this.state.lastSelectedCol - 1] === 'b') {
-                            if (col === this.state.lastSelectedCol - 2) {
-                                this.move(row, col, squares)
-                                this.capture(this.lastSelectedRow - 1, this.state.lastSelectedCol - 1)
-                            }
-                        }
-                    }
+            let shouldMovingStateChange = false;
+            // if a piece is not moving, get possible moves when piece is clicked
+            if (!pieceIsMoving) {
+                let piece = squares[row][col];
+                if ((piece == 'w' && this.state.whiteIsCurrent) ||
+                    (piece == 'b' && !this.state.whiteIsCurrent)) {
+                    possibleMoves = this.getPossibleMoves(squares, row, col);
+                    highlightedPieces = possibleMoves['normalMoves'].concat(possibleMoves['jumpMoves'])
+                    pieceIsMoving = true;
+                } 
+                else
+                {
+                    pieceIsMoving = false;
                 }
             }
+            // else, if the piece is moving and landing on a location, 
+            // check if [row, col] are in possibleMoves and move/jump
+            // then resets highlightedPieces and possibleMoves
+            else if (pieceIsMoving) {
+                let jumpMoveIndex = 0;
+                if (this.indexOfLocInArray(row, col, possibleMoves['normalMoves']) >= 0) {
+                    this.move(row, col, squares);
+                    pieceIsMoving = false;
+                } else if ((jumpMoveIndex = this.indexOfLocInArray(row, col, possibleMoves['jumpMoves'])) >= 0) {
+                    this.move(row, col, squares);
+                    let capturedRow = possibleMoves['captures'][jumpMoveIndex][0];
+                    let capturedCol = possibleMoves['captures'][jumpMoveIndex][1];
+                    console.log("Captured row");
+                    console.log(capturedRow);
+                    this.capture(capturedRow, capturedCol, squares);
+                }
 
+                pieceIsMoving = false;
+                // resets possible moves and highlighted pieces after a move is made
+                possibleMoves = {};
+                highlightedPieces = [];
+
+            }
+
+            shouldMovingStateChange && this.setState({ pieceIsMoving: !this.state.pieceIsMoving });
             this.setState({
-                squares,
+                squares: squares,
+                possibleMoves: possibleMoves,
+                highlightedPieces: highlightedPieces,
                 lastSelectedRow: row,
                 lastSelectedCol: col,
-                pieceIsMoving: !this.state.pieceIsMoving,
+                pieceIsMoving: pieceIsMoving
             });
 
-
+            console.log("-------------End possible moves----------");
         }
 
         render() {
-            console.log(this.state.squares)
-            let status = this.state.pieceIsMoving ? 'A piece is moving' : this.state.whiteIsCurrent ? 'Next Turn: Player 1' : 'Next Turn: Player 2';
+            let status = this.state.pieceIsMoving ? 'A piece is moving' : this.state.whiteIsCurrent ? 'Next Turn: White Turn' : 'Next Turn: Black Turn';
             const board = [];
             for (let row = 0; row < 8; row++) {
                 const cols = [];
                 for (let col = 0; col < 8; col++) {
                     cols.push(this.renderSquare(row, col));
                 }
-                board.push( < div className = "board-row" > { cols } </div>);
+                board.push( < div className = "board-row" > { cols } < /div>);
                 }
 
                 return ( < div >

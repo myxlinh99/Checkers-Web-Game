@@ -12,8 +12,8 @@ class Game extends React.Component {
   constructor() {
     super();
     this.state = {
-      endpoint: "http://127.0.0.1:3000",
-      // endpoint: "https://frozen-plateau-07686.herokuapp.com",
+      // endpoint: "http://127.0.0.1:3000",
+      endpoint: "https://frozen-plateau-07686.herokuapp.com",
       socket: null,
       isGameStarted: false,
       gameId: null,

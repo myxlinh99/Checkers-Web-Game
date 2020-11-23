@@ -11,13 +11,13 @@ class ShowUsers extends Component {
     }
     componentDidMount() {
         this.props.socket.on('getOpponentsResponse', data => {
-            // console.log(data);
+            console.log("getOpponentsResponse", data);
             this.setState({
                 opponents: data
             });
         });
         this.props.socket.on('newOpponentAdded', data => {
-            // console.log(data);
+            console.log("newOpponentAdded", data);
             this.setState({
                 opponents: [...this.state.opponents, data]
             });
@@ -38,7 +38,7 @@ class ShowUsers extends Component {
             }
         });
         this.props.socket.on('excludePlayers', data => {
-            console.log(data);
+            // console.log(data);
             for (var j = 0; j < data.length; j++) {
                 var flag = false;
                 var i = 0;
@@ -57,24 +57,27 @@ class ShowUsers extends Component {
 
         });
         this.props.socket.on('gameStarted', data => {
-            console.log(data);
+            console.log("gameStarted", data);
             this.props.gameStartConfirmation(data);
         });
         
         this.props.socket.emit('getOpponents', {});
     }
     selectOpponent = (index) => {
+        console.log(this.state.opponents, this.state.opponents[index].id)
         this.props.socket.emit('selectOpponent', { "id": this.state.opponents[index].id });
     };
     render() {
         return (
             <Fragment>
                 <h2>Please select opponent from the following</h2>
+
                 <ListGroup onSelect={this.selectOpponent}>
                     {this.state.opponents.map(function (opponent, index) {
                         return <ListGroup.Item action={true} className="opponent-item" key={index} eventKey={index} >{opponent.mobile_number} | Played : {opponent.played}  | Won : {opponent.won}  | Draw : {opponent.draw}</ListGroup.Item>;
                     })}
-                </ListGroup></Fragment>
+                </ListGroup>
+            </Fragment>
         );
     }
 }

@@ -6,7 +6,9 @@ class GamePlay extends Component {
     constructor() {
         super();
         this.state = {
-            gameData: null
+            gameData: null,
+            gameState: null,
+            playerId: null,
         }
     }
     componentDidMount() {
@@ -15,14 +17,9 @@ class GamePlay extends Component {
             gameData: this.props.gameData,
             gameId: this.props.gameId,
             gameBetweenSeconds: 10,
+            playerId: this.props.playerId
         });
 
-        this.props.socket.on('selectCellResponse', data => {
-            // console.log(data);
-            this.setState({
-                gameData: data
-            });
-        });
         this.props.socket.on('gameInterval', data => {
             // console.log(data);
             this.setState({
@@ -41,31 +38,32 @@ class GamePlay extends Component {
             this.props.opponentLeft();
         });
     }
-    selectCell = (i, j) => {
-        this.props.socket.emit('selectCell', { gameId: this.state.gameId, "i": i, "j": j });
+    selectCell = (data) => {
+        console.log(data.gameState)
+        this.props.socket.emit('selectCell', { gameId: this.state.gameId, "i": data.i, "j": data.j, "gameState": data.gameState, "playerId": this.state.playerId});
     };
 
-    generateCellDOM = () => {
-        console.log(this.state.gameData);
-        let table = []
-        for (let i = 0; i < 3; i++) {
-            let children = []
-            for (let j = 0; j < 3; j++) {
-                var showWinnerCell = false;
-                if (this.state.gameData.game_status === "won") {
-                    for (let k = 0; k < this.state.gameData.winning_combination.length; k++) {
-                        if (i === this.state.gameData.winning_combination[k][0] && j === this.state.gameData.winning_combination[k][1]) {
-                            showWinnerCell = true;
-                            break;
-                        }
-                    }
-                }
-                children.push(<td key={"cell" + i + j} className={showWinnerCell ? "winner-cell" : ""} ><div key={"cell-div" + i + j} className={"cell cell-" + this.state.gameData.playboard[i][j]} onClick={(this.state.gameData.game_status !== "ongoing" || this.props.socket.id !== this.state.gameData.whose_turn || this.state.gameData.playboard[i][j] ? () => void (0) : () => this.selectCell(i, j))}></div></td>)
-            }
-            table.push(<tr key={"row" + i} >{children}</tr>)
-        }
-        return table
-    }
+    // generateCellDOM = () => {
+    //     console.log(this.state.gameData);
+    //     let table = []
+    //     for (let i = 0; i < 3; i++) {
+    //         let children = []
+    //         for (let j = 0; j < 3; j++) {
+    //             var showWinnerCell = false;
+    //             if (this.state.gameData.game_status === "won") {
+    //                 for (let k = 0; k < this.state.gameData.winning_combination.length; k++) {
+    //                     if (i === this.state.gameData.winning_combination[k][0] && j === this.state.gameData.winning_combination[k][1]) {
+    //                         showWinnerCell = true;
+    //                         break;
+    //                     }
+    //                 }
+    //             }
+    //             children.push(<td key={"cell" + i + j} className={showWinnerCell ? "winner-cell" : ""} ><div key={"cell-div" + i + j} className={"cell cell-" + this.state.gameData.playboard[i][j]} onClick={(this.state.gameData.game_status !== "ongoing" || this.props.socket.id !== this.state.gameData.whose_turn || this.state.gameData.playboard[i][j] ? () => void (0) : () => this.selectCell(i, j))}></div></td>)
+    //         }
+    //         table.push(<tr key={"row" + i} >{children}</tr>)
+    //     }
+    //     return table
+    // }
 
     render() {
         return (
@@ -81,7 +79,7 @@ class GamePlay extends Component {
                 <Row>
                     <Col>
                         <Table bordered>
-                            <Board/>
+                            <Board playerId={this.state.playerId} selectCell={this.selectCell} socket={this.props.socket} gameData={this.state.gameData}/>
                         </Table>
                     </Col>
                 </Row>

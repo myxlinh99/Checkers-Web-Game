@@ -16,8 +16,9 @@ class Game extends React.Component {
       // endpoint: "https://frozen-plateau-07686.herokuapp.com",
       socket: null,
       isGameStarted: false,
-      gameId:null,
+      gameId: null,
       gameData: null,
+      playerId: null,
     };
   }
 
@@ -25,10 +26,13 @@ class Game extends React.Component {
     const { endpoint } = this.state;
     console.log(endpoint);
     // Made a connection with server
-    const socket = socketIOClient(endpoint, {'transports': ['websocket'], 'match origin protocol': true});
-    
+    const socket = socketIOClient(endpoint, { 'transports': ['websocket'], 'match origin protocol': true });
+
     socket.on("connected", data => {
-      this.setState({ socket: socket })
+      this.setState({
+        socket: socket,
+        playerId: data.id
+      })
     });
   }
 
@@ -52,15 +56,15 @@ class Game extends React.Component {
     return (
       <Container>
         {
-          !this.state.isGameStarted 
-          ? !this.state.isRegistered 
-          ? <header className="App-header">
-            {this.state.socket
-              ? <GetUserDetail socket={this.state.socket} registrationConfirmation={this.registrationConfirmation} />
-              : <p>Loading...</p>}
-            </header> 
-          : <ShowUsers socket={this.state.socket} gameStartConfirmation={this.gameStartConfirmation} /> 
-          : <GamePlay socket={this.state.socket} gameId={this.state.gameId} gameData={this.state.gameData} opponentLeft={this.opponentLeft} />
+          !this.state.isGameStarted
+            ? !this.state.isRegistered
+              ? <header className="App-header">
+                {this.state.socket
+                  ? <GetUserDetail socket={this.state.socket} registrationConfirmation={this.registrationConfirmation} />
+                  : <p>Loading...</p>}
+              </header>
+              : <ShowUsers socket={this.state.socket} gameStartConfirmation={this.gameStartConfirmation} />
+            : <GamePlay playerId={this.state.playerId} socket={this.state.socket} gameId={this.state.gameId} gameData={this.state.gameData} opponentLeft={this.opponentLeft} />
         }
       </Container>
     );

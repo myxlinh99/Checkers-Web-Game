@@ -17,18 +17,22 @@ class Game extends React.Component {
       endpoint: "https://frozen-plateau-07686.herokuapp.com",
       socket: null,
       isGameStarted: false,
-      gameId:null,
+      gameId: null,
       gameData: null,
+      playerId: null,
     };
   }
 
   componentDidMount() {
     const { endpoint } = this.state;
     // Made a connection with server
-    const socket = socketIOClient(endpoint, {'transports': ['websocket'], 'match origin protocol': true});
-    
+    const socket = socketIOClient(endpoint, { 'transports': ['websocket'], 'match origin protocol': true });
+
     socket.on("connected", data => {
-      this.setState({ socket: socket })
+      this.setState({
+        socket: socket,
+        playerId: data.id
+      })
     });
   }
 
@@ -109,7 +113,6 @@ class Game extends React.Component {
           {!this.state.showMenu && !this.state.isGameStarted && !this.state.isRegistered && !this.state.socket && this.renderLoading()}
           {!this.state.showMenu && !this.state.isGameStarted && this.state.isRegistered && this.renderUsers()}
           {!this.state.showMenu && this.state.isGameStarted && this.state.isRegistered && this.renderGamePlay()}
-        
       </Container>
     );
   }

@@ -74,7 +74,13 @@ class ShowUsers extends Component {
 
                 <ListGroup onSelect={this.selectOpponent}>
                     {this.state.opponents.map(function (opponent, index) {
-                        return <ListGroup.Item action={true} className="opponent-item" key={index} eventKey={index} >{opponent.mobile_number} | Played : {opponent.played}  | Won : {opponent.won}  | Draw : {opponent.draw}</ListGroup.Item>;
+                        return <ListGroup.Item 
+                            action={true} 
+                            className="opponent-item" 
+                            key={index} 
+                            eventKey={index} >
+                                {opponent.mobile_number} | Played : {opponent.played}  | Won : {opponent.won}  | Draw : {opponent.draw}
+                        </ListGroup.Item>;
                     })}
                 </ListGroup>
             </Fragment>
